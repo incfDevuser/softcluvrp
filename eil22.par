@@ -1,0 +1,4 @@
+PROBLEM_FILE = eil22.tsp
+OUTPUT_TOUR_FILE = eil22.sol
+RUNS = 1
+TRACE_LEVEL = 1
