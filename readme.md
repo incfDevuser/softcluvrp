@@ -91,7 +91,7 @@ La visualización incluye:
 - Diego Barria
 - Vicente Gaete
 
-Proyecto para el curso CINF105 – Optimización, Universidad de Chile, 2025.
+Proyecto para el curso CINF105 – Optimización, Universidad Andres Bello, 2025.
 
 ## 🧠 Licencia
 
