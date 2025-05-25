@@ -1,0 +1,4 @@
+PROBLEM_FILE = ../INSTANCES/Grid/grid25-n121-C14-V5.cluvrp
+TOUR_FILE = ../TOURS/Grid/grid25-n121-C14-V5.tour
+OUTPUT_TOUR_FILE = ../SOLUTIONS/Grid/grid25-n121-C14-V5.sol
+RUNS = 10

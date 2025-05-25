@@ -1,0 +1,41 @@
+NAME : A-n32-k5-C11-V2.515.tour
+COMMENT : Length = 515
+COMMENT : Found by LKH-3 [Keld Helsgaun] Sun May 25 19:30:36 2025
+TYPE : TOUR
+DIMENSION : 33
+TOUR_SECTION
+2
+13
+17
+31
+1
+21
+6
+26
+11
+30
+16
+23
+10
+19
+9
+12
+5
+29
+24
+3
+4
+7
+15
+25
+28
+33
+27
+8
+14
+18
+20
+32
+22
+-1
+EOF

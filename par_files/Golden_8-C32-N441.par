@@ -1,0 +1,4 @@
+PROBLEM_FILE = ../INSTANCES/Golden/Golden_8-C32-N441.cluvrp
+TOUR_FILE = ../TOURS/Golden/Golden_8-C32-N441.tour
+OUTPUT_TOUR_FILE = ../SOLUTIONS/Golden/Golden_8-C32-N441.sol
+RUNS = 10

@@ -1,0 +1,4 @@
+PROBLEM_FILE = ../INSTANCES/Grid/grid66-n225-C6-V2.cluvrp
+TOUR_FILE = ../TOURS/Grid/grid66-n225-C6-V2.tour
+OUTPUT_TOUR_FILE = ../SOLUTIONS/Grid/grid66-n225-C6-V2.sol
+RUNS = 10
