@@ -262,7 +262,7 @@ class SoftCluVRPMultiVehicle:
                 if node.cluster == cluster_id:
                     dist = math.sqrt((node.x - center[0])**2 + (node.y - center[1])**2)
                     max_distance = max(max_distance, dist)
-            cluster_radius[cluster_id] = max_distance * 1.2  # Añadir margen
+            cluster_radius[cluster_id] = max_distance * 1.2 
         return cluster_radius
 
 def parse_cluvrp(filepath):
