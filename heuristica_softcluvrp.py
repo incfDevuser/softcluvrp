@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib.patches import Circle
 import sys
 import re
-
 class Node:
     def __init__(self, id, x, y, demand, cluster):
         self.id = id
@@ -17,9 +16,8 @@ class Node:
 
     def distance_to(self, other):
         return math.hypot(self.x - other.x, self.y - other.y)
-
 class SoftCluVRPMultiVehicle:
-    def __init__(self, nodes, depot_id, num_vehicles, capacity, penalty=1000):
+    def __init__(self, nodes, depot_id, num_vehicles, capacity, penalty=2):
         self.nodes = {node.id: node for node in nodes}
         self.depot_id = depot_id
         self.penalty = penalty
@@ -27,8 +25,27 @@ class SoftCluVRPMultiVehicle:
         self.capacity = capacity
         self.routes = [[] for _ in range(num_vehicles)]
         self.cluster_colors = None
-        
+    def calculate_cluster_densities(self):
+        from scipy.spatial import ConvexHull
+        cluster_points = defaultdict(list)
+        for node in self.nodes.values():
+            cluster_points[node.cluster].append((node.x, node.y))
+        cluster_densities = {}
+        for cluster_id, points in cluster_points.items():
+            if len(points) < 3:
+                cluster_densities[cluster_id] = float('inf')
+                continue
+            points_np = np.array(points)
+            try:
+                hull = ConvexHull(points_np)
+                area = hull.volume
+            except:
+                area = 0.0001
+            density = len(points) / area if area > 0 else float('inf')
+            cluster_densities[cluster_id] = density
+        return cluster_densities
     def construct_routes(self):
+        cluster_densities = self.calculate_cluster_densities()
         for i in range(self.num_vehicles):
             self.routes[i] = [self.depot_id]
         unvisited = set(self.nodes.keys()) - {self.depot_id}
@@ -39,54 +56,49 @@ class SoftCluVRPMultiVehicle:
             best_route = None
             for node_id in unvisited:
                 node = self.nodes[node_id]
+                raw_density = cluster_densities.get(node.cluster, 1.0)
+                density = min(max(raw_density, 0.1), 10.0)
                 for i, route in enumerate(self.routes):
                     if node.demand <= remaining_capacity[i]:
                         last_node = self.nodes[route[-1]]
-                        cost = last_node.distance_to(node)
-                        
-                        if cost < min_cost:
-                            min_cost = cost
+                        base_cost = last_node.distance_to(node)
+                        penalty_factor = 1.0 / density
+                        adjusted_cost = base_cost * (1 + penalty_factor)
+
+                        if adjusted_cost < min_cost:
+                            min_cost = adjusted_cost
                             best_node = node_id
                             best_route = i
-            
             if best_node is None:
                 print("Advertencia: No se pudieron asignar todos los nodos debido a restricciones de capacidad")
                 break
-            
             self.routes[best_route].append(best_node)
-            
             remaining_capacity[best_route] -= self.nodes[best_node].demand
-            
             unvisited.remove(best_node)
-        
         for i in range(self.num_vehicles):
             if self.routes[i][-1] != self.depot_id:
                 self.routes[i].append(self.depot_id)
-        
+        for i in range(self.num_vehicles):
+            self.routes[i] = self.local_2opt(self.routes[i])
         return self.routes
-    
     def evaluate_route(self, route):
         """Evalúa una sola ruta"""
         total_dist = 0
         seen_clusters = defaultdict(list)
-
         for i in range(1, len(route)):
             a = self.nodes[route[i - 1]]
             b = self.nodes[route[i]]
             total_dist += a.distance_to(b)
             if route[i] != self.depot_id: 
                 seen_clusters[b.cluster].append(i)
-                
         cluster_violations = 0
         for cluster_id, positions in seen_clusters.items():
             if len(positions) <= 1:
                 continue
             sorted_pos = sorted(positions)
             if max(sorted_pos) - min(sorted_pos) + 1 != len(sorted_pos):
-                cluster_violations += 1
-                
-        return total_dist, cluster_violations
-    
+                cluster_violations += 1 
+        return total_dist, cluster_violations   
     def evaluate_solution(self):
         """Evalúa toda la solución (todas las rutas)"""
         total_dist = 0
@@ -103,10 +115,8 @@ class SoftCluVRPMultiVehicle:
                 'nodes': len(route) - 2,  
                 'total_demand': sum(self.nodes[n].demand for n in route if n != self.depot_id)
             })
-        
         total_penalty = total_violations * self.penalty
         total_cost = total_dist + total_penalty
-        
         return {
             'total_distance': total_dist,
             'total_violations': total_violations,
@@ -117,18 +127,12 @@ class SoftCluVRPMultiVehicle:
     
     def plot_solution(self, title="SoftCluVRP - Solución Multi-Vehículo", save_path=None):
         plt.figure(figsize=(14, 10))
-        
         unique_clusters = sorted(set(node.cluster for node in self.nodes.values()))
         cmap = plt.cm.get_cmap('tab10', len(unique_clusters))
         self.cluster_colors = {cl: cmap(i % 10) for i, cl in enumerate(unique_clusters)}
-
         vehicle_colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33F5', '#F5FF33', '#33FFF5', '#F533FF', '#FF8C33']
-        
-
         centers = self._calculate_cluster_centers()
         radii = self._calculate_cluster_radius(centers)
-        
-
         for cluster_id, center in centers.items():
             if cluster_id in radii:
                 circle = Circle(
@@ -140,21 +144,15 @@ class SoftCluVRPMultiVehicle:
                     zorder=1
                 )
                 plt.gca().add_patch(circle)
-        
-
         for i, route in enumerate(self.routes):
             if not route:
-                continue
-                
+                continue    
             color = vehicle_colors[i % len(vehicle_colors)]
             vehicle_label = f"Vehículo {i+1}"
-            
-
             for j in range(len(route) - 1):
                 a, b = route[j], route[j + 1]
                 xa, ya = self.nodes[a].x, self.nodes[a].y
                 xb, yb = self.nodes[b].x, self.nodes[b].y
-                
 
                 if j == 0:
                     plt.plot([xa, xb], [ya, yb], color=color, linestyle='-', linewidth=2, label=vehicle_label, zorder=2)
@@ -181,16 +179,20 @@ class SoftCluVRPMultiVehicle:
                 plt.scatter(node.x, node.y, color=self.cluster_colors[node.cluster], s=100, edgecolors='black', linewidth=1, zorder=4)
                 plt.text(node.x, node.y + 2, f"{node_id} (d:{node.demand})", fontsize=8, ha='center', zorder=6)
         
+        densities = self.calculate_cluster_densities()
+
         for cluster_id, center in centers.items():
+            density = densities.get(cluster_id, 0)
             plt.text(
                 center[0], center[1], 
-                f"Cluster {cluster_id}", 
-                fontsize=10, 
+                f"Cluster {cluster_id}\nρ={density:.2f}",  # ρ = densidad
+                fontsize=9, 
                 ha='center', 
                 va='center',
                 bbox=dict(facecolor='white', alpha=0.7, boxstyle='round'),
                 zorder=5
             )
+
         
         metrics = self.evaluate_solution()
         
@@ -205,10 +207,7 @@ class SoftCluVRPMultiVehicle:
         else:
             clean_name = "Solución"
         
-        plt.title(f"SoftCluVRP - {clean_name}\n"
-                  f"Costo Total: {metrics['total_cost']:.1f} = {metrics['total_distance']:.1f} (dist) + "
-                  f"{metrics['total_penalty']} (penal) | {self.num_vehicles} vehículos", 
-                  fontsize=14)
+        plt.title(f"SoftCluVRP - {clean_name}\n")
         plt.xlabel("X", fontsize=12)
         plt.ylabel("Y", fontsize=12)
         plt.grid(True, linestyle='--', alpha=0.7)
@@ -264,6 +263,29 @@ class SoftCluVRPMultiVehicle:
                     max_distance = max(max_distance, dist)
             cluster_radius[cluster_id] = max_distance * 1.2 
         return cluster_radius
+    def local_2opt(self, route):
+        """Optimiza una ruta con 2-opt para reducir distancia manteniendo clústeres contiguos"""
+        best = route[:]
+        improved = True
+        while improved:
+            improved = False
+            for i in range(1, len(best) - 2):
+                for j in range(i + 1, len(best) - 1):
+                    if best[i] == self.depot_id or best[j] == self.depot_id:
+                        continue
+                    # Propuesta de inversión
+                    new_route = best[:i] + best[i:j+1][::-1] + best[j+1:]
+                    # Verifica que no rompe clústeres
+                    _, violations = self.evaluate_route(new_route)
+                    if violations == 0:
+                        old_dist, _ = self.evaluate_route(best)
+                        new_dist, _ = self.evaluate_route(new_route)
+                        if new_dist < old_dist:
+                            best = new_route
+                            improved = True
+            route = best
+        return best
+
 
 def parse_cluvrp(filepath):
     nodes = []
@@ -385,13 +407,6 @@ def main(instance_name=None):
     print("-" * 60)
     for route_data in metrics['route_metrics']:
         print(f"{route_data['vehicle']:<10}{route_data['distance']:<12.2f}{route_data['violations']:<14}{route_data['nodes']:<8}{route_data['total_demand']}")
-    
-    print("\nMétricas globales:")
-    print(f"Distancia total: {metrics['total_distance']:.2f}")
-    print(f"Violaciones de clúster: {metrics['total_violations']}")
-    print(f"Penalización: {metrics['total_penalty']}")
-    print(f"Costo total: {metrics['total_cost']:.2f}")
-    
     save_path = os.path.join("visualizations", f"{instance_name}_heuristica.png")
     vrp.plot_solution(title=f"SoftCluVRP - {instance_name}", save_path=save_path)
     print("\nDetalle de clústeres:")
