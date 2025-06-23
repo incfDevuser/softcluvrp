@@ -9,7 +9,7 @@ const TestPage = () => {
         <div className="mx-auto px-6 py-4 flex items-center justify-between">
           <Link
             to="/"
-            className="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="group inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm md:text-base"
           >
             <svg
               className="w-5 h-5 mr-3 transition-transform group-hover:-translate-x-1"

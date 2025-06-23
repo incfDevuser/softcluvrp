@@ -11,6 +11,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "./Mapa.css";
 import {
   solveSoftCluVRPGeo,
   CLUSTER_COLORS,
@@ -29,25 +30,53 @@ L.Icon.Default.mergeOptions({
 
 const PENAFLOR_CENTER = [-33.6078137691373, -70.9008442860471];
 
+const MODERN_COLORS = {
+  primary: "#0F172A",
+  secondary: "#334155",
+  accent: "#3B82F6",
+  success: "#10B981",
+  warning: "#F59E0B",
+  danger: "#EF4444",
+  info: "#06B6D4",
+  purple: "#8B5CF6",
+  background: "#F8FAFC",
+  surface: "#FFFFFF",
+  muted: "#64748B",
+};
+
 const createCustomIcon = (color, isDepot = false, text = "") => {
-  const size = isDepot ? 35 : 25;
-  const symbol = isDepot ? "🏢" : "📍";
+  const size = isDepot ? 40 : 30;
+  const symbol = isDepot ? "�" : "📍";
   return L.divIcon({
     html: `<div style="
-      background-color: ${color};
+      background: ${color};
       width: ${size}px;
       height: ${size}px;
       border-radius: 50%;
-      border: 3px solid white;
+      border: 2px solid #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: ${isDepot ? "16px" : "12px"};
-      font-weight: bold;
+      font-size: ${isDepot ? "18px" : "14px"};
+      font-weight: 600;
       color: white;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.1);
       cursor: pointer;
-    ">${symbol}</div>`,
+      transition: all 0.3s ease;
+      position: relative;
+    ">${symbol}
+    <div style="
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 12px;
+      height: 12px;
+      background: ${isDepot ? "#10B981" : "#3B82F6"};
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    "></div>
+    </div>`,
     className: "custom-div-icon",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -72,9 +101,10 @@ const Mapa = () => {
     isDepot: false,
   });
   const [solution, setSolution] = useState(null);
-  const [showVisualization, setShowVisualization] = useState(false);  const [vrpParams, setVrpParams] = useState({
-    numVehicles: 3,
-    capacity: 50,
+  const [showVisualization, setShowVisualization] = useState(false);
+  const [vrpParams, setVrpParams] = useState({
+    numVehicles: 5,
+    capacity: 80,
   });
   const loadExamplePenaflor = useCallback(() => {
     const exampleNodes = [
@@ -88,7 +118,7 @@ const Mapa = () => {
       },
       {
         id: 2,
-        lat: -33.595,
+        lat: -33.59,
         lon: -70.895,
         cluster: 1,
         demand: 12,
@@ -96,81 +126,81 @@ const Mapa = () => {
       },
       {
         id: 3,
-        lat: -33.59,
-        lon: -70.905,
+        lat: -33.585,
+        lon: -70.9,
         cluster: 1,
         demand: 8,
         isDepot: false,
       },
       {
         id: 4,
-        lat: -33.598,
-        lon: -70.915,
-        cluster: 1,
+        lat: -33.595,
+        lon: -70.885,
+        cluster: 2,
         demand: 15,
         isDepot: false,
       },
       {
         id: 5,
-        lat: -33.625,
-        lon: -70.895,
+        lat: -33.592,
+        lon: -70.88,
         cluster: 2,
         demand: 10,
         isDepot: false,
       },
       {
         id: 6,
-        lat: -33.63,
-        lon: -70.905,
-        cluster: 2,
+        lat: -33.605,
+        lon: -70.875,
+        cluster: 3,
         demand: 18,
         isDepot: false,
       },
       {
         id: 7,
-        lat: -33.62,
-        lon: -70.92,
-        cluster: 2,
+        lat: -33.61,
+        lon: -70.87,
+        cluster: 3,
         demand: 7,
         isDepot: false,
       },
       {
         id: 8,
-        lat: -33.605,
-        lon: -70.88,
-        cluster: 3,
+        lat: -33.62,
+        lon: -70.885,
+        cluster: 4,
         demand: 14,
         isDepot: false,
       },
       {
         id: 9,
-        lat: -33.615,
-        lon: -70.875,
-        cluster: 3,
+        lat: -33.625,
+        lon: -70.89,
+        cluster: 4,
         demand: 11,
         isDepot: false,
       },
       {
         id: 10,
-        lat: -33.61,
-        lon: -70.87,
-        cluster: 3,
+        lat: -33.63,
+        lon: -70.905,
+        cluster: 5,
         demand: 16,
         isDepot: false,
       },
       {
         id: 11,
-        lat: -33.605,
-        lon: -70.93,
-        cluster: 4,
+        lat: -33.635,
+        lon: -70.91,
+        cluster: 5,
         demand: 9,
         isDepot: false,
       },
       {
         id: 12,
-        lat: -33.615,
-        lon: -70.935,
-        cluster: 4,
+        lat: -33.625,
+        lon: -70.92,
+        cluster: 6,
         demand: 13,
         isDepot: false,
       },
@@ -178,8 +208,88 @@ const Mapa = () => {
         id: 13,
         lat: -33.62,
         lon: -70.925,
-        cluster: 4,
+        cluster: 6,
         demand: 6,
+        isDepot: false,
+      },
+      {
+        id: 14,
+        lat: -33.605,
+        lon: -70.93,
+        cluster: 7,
+        demand: 20,
+        isDepot: false,
+      },
+      {
+        id: 15,
+        lat: -33.6,
+        lon: -70.935,
+        cluster: 7,
+        demand: 12,
+        isDepot: false,
+      },
+      {
+        id: 16,
+        lat: -33.59,
+        lon: -70.92,
+        cluster: 8,
+        demand: 17,
+        isDepot: false,
+      },
+      {
+        id: 17,
+        lat: -33.585,
+        lon: -70.915,
+        cluster: 8,
+        demand: 8,
+        isDepot: false,
+      },
+      {
+        id: 18,
+        lat: -33.598,
+        lon: -70.905,
+        cluster: 9,
+        demand: 14,
+        isDepot: false,
+      },
+      {
+        id: 19,
+        lat: -33.595,
+        lon: -70.91,
+        cluster: 9,
+        demand: 11,
+        isDepot: false,
+      },
+      {
+        id: 20,
+        lat: -33.615,
+        lon: -70.895,
+        cluster: 10,
+        demand: 19,
+        isDepot: false,
+      },
+      {
+        id: 21,
+        lat: -33.612,
+        lon: -70.89,
+        cluster: 10,
+        demand: 13,
+        isDepot: false,
+      },
+      {
+        id: 22,
+        lat: -33.618,
+        lon: -70.91,
+        cluster: 11,
+        demand: 15,
+        isDepot: false,
+      },
+      {
+        id: 23,
+        lat: -33.62,
+        lon: -70.915,
+        cluster: 11,
+        demand: 9,
         isDepot: false,
       },
     ];
@@ -337,239 +447,312 @@ const Mapa = () => {
 
   useEffect(() => {
     loadExamplePenaflor();
-  }, [loadExamplePenaflor]);  return (
-    <div className="h-full w-full flex">
-      <div className="w-80 bg-white p-5 shadow-lg overflow-y-auto z-50">
-        <h2 className="mb-5 text-gray-700 text-xl font-semibold">
-          🚛 SoftCluVRP - Municipalidad Peñaflor
-        </h2>{" "}
-        <div className="mb-5 p-4 bg-gray-50 rounded-lg">
-          <h4 className="mb-2 text-sm font-medium">⚙️ Parámetros</h4>
-          <div className="mb-2">
-            <label className="block mb-1 text-sm">Vehículos:</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={vrpParams.numVehicles}
-              onChange={(e) =>
-                setVrpParams((prev) => ({
-                  ...prev,
-                  numVehicles: parseInt(e.target.value),
-                }))
-              }
-              className="w-full p-1 border border-gray-300 rounded"
-            />
+  }, [loadExamplePenaflor]);
+  return (
+    <div className="h-full w-full flex bg-slate-50">
+      <div className="w-96 bg-white border-r border-slate-200 flex flex-col shadow-xl">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-700 text-white p-6">
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-xl font-bold">SoftCluVRP Tester</h2>
+            </div>
           </div>
-          <div>
-            <label className="block mb-1 text-sm">Capacidad:</label>
-            <input
-              type="number"
-              min="1"
-              max="1000"
-              value={vrpParams.capacity}
-              onChange={(e) =>
-                setVrpParams((prev) => ({
-                  ...prev,
-                  capacity: parseInt(e.target.value),
-                }))
-              }
-              className="w-full p-1 border border-gray-300 rounded"
-            />
-          </div>
-        </div>{" "}
-        <div className="mb-5 p-4 bg-blue-50 rounded-lg">
-          <h4 className="mb-2 text-sm font-medium">➕ Añadir Nodo</h4>
-
-          <div className="mb-2">
-            <label className="flex items-center gap-1">
-              <input
-                type="checkbox"
-                checked={newNodeData.isDepot}
-                onChange={(e) =>
-                  setNewNodeData((prev) => ({
-                    ...prev,
-                    isDepot: e.target.checked,
-                  }))
-                }
-                className="mr-1"
-              />
-              Es depósito
-            </label>
-          </div>
-
-          {!newNodeData.isDepot && (
-            <>
-              <div className="mb-2">
-                <label className="block mb-1 text-sm">Cluster:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={newNodeData.cluster}
-                  onChange={(e) =>
-                    setNewNodeData((prev) => ({
-                      ...prev,
-                      cluster: parseInt(e.target.value),
-                    }))
-                  }
-                  className="w-full p-1 border border-gray-300 rounded"
-                />
-              </div>
-
-              <div className="mb-2">
-                <label className="block mb-1 text-sm">Demanda:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={newNodeData.demand}
-                  onChange={(e) =>
-                    setNewNodeData((prev) => ({
-                      ...prev,
-                      demand: parseInt(e.target.value),
-                    }))
-                  }
-                  className="w-full p-1 border border-gray-300 rounded"
-                />
-              </div>
-            </>
-          )}
-
-          <button
-            onClick={() => setIsAddingNode(!isAddingNode)}
-            className={`w-full p-2 text-white border-none rounded cursor-pointer ${
-              isAddingNode ? "bg-red-500" : "bg-blue-500"
-            }`}
-          >
-            {isAddingNode ? "❌ Cancelar" : "📍 Añadir en Mapa"}
-          </button>
-        </div>{" "}
-        <div className="flex flex-col gap-2 mb-5">
-          <button
-            onClick={loadExamplePenaflor}
-            className="p-2 bg-green-500 text-white border-none rounded cursor-pointer"
-          >
-            📍 Cargar Ejemplo Municipalidad
-          </button>
-
-          <button
-            onClick={solveProblem}
-            disabled={nodes.length < 2}
-            className={`p-2 text-white border-none rounded ${
-              nodes.length >= 2
-                ? "bg-yellow-500 cursor-pointer"
-                : "bg-gray-500 cursor-not-allowed"
-            }`}
-          >
-            🔧 Resolver VRP
-          </button>
-
-          <button
-            onClick={clearAll}
-            className="p-2 bg-red-500 text-white border-none rounded cursor-pointer"
-          >
-            🗑️ Limpiar Todo
-          </button>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <input
-              type="file"
-              accept=".json"
-              onChange={importData}
-              className="hidden"
-              id="file-input"
-            />
-            <label
-              htmlFor="file-input"
-              className="p-2 bg-blue-500 text-white rounded cursor-pointer text-center"
-            >
-              📥 Importar Datos
-            </label>
-
-            <button
-              onClick={exportData}
-              className="p-2 bg-blue-500 text-white border-none rounded cursor-pointer"
-            >
-              📤 Exportar Datos
-            </button>
-
-            <button
-              onClick={saveToLocalStorage}
-              className="p-2 bg-blue-500 text-white border-none rounded cursor-pointer"
-            >
-              💾 Guardar en Navegador
-            </button>
-
-            <button
-              onClick={loadFromLocalStorage}
-              className="p-2 bg-blue-500 text-white border-none rounded cursor-pointer"
-            >
-              📂 Cargar desde Navegador
-            </button>
-          </div>
-        </div>{" "}
-        {solution && (
-          <div className="p-4 bg-green-100 rounded-lg mb-5">
-            <h4 className="mb-2 text-sm font-medium">📊 Resultados</h4>
-            <div className="text-sm">
-              <div>💰 Costo Total: {solution.metrics.totalCost.toFixed(1)}</div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200 sidebar-section">
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="font-semibold text-slate-800">Configuración</h4>
+            </div>
+            <div className="space-y-4">
               <div>
-                📏 Distancia: {solution.metrics.totalDistance.toFixed(1)}
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Número de Vehículos
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={vrpParams.numVehicles}
+                    onChange={(e) =>
+                      setVrpParams((prev) => ({
+                        ...prev,
+                        numVehicles: parseInt(e.target.value),
+                      }))
+                    }
+                    className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                </div>
               </div>
-              <div>⚠️ Violaciones: {solution.metrics.totalViolations}</div>
-              <div>🚚 Vehículos: {vrpParams.numVehicles}</div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Capacidad por Vehículo
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={vrpParams.capacity}
+                    onChange={(e) =>
+                      setVrpParams((prev) => ({
+                        ...prev,
+                        capacity: parseInt(e.target.value),
+                      }))
+                    }
+                    className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-blue-50 to-blue-50 rounded-2xl p-5 border border-blue-200 sidebar-section">
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="font-semibold text-slate-800">Añadir Punto</h4>
             </div>
 
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 p-3 bg-white rounded-xl border-2 border-transparent hover:border-blue-200 transition-all cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newNodeData.isDepot}
+                  onChange={(e) =>
+                    setNewNodeData((prev) => ({
+                      ...prev,
+                      isDepot: e.target.checked,
+                    }))
+                  }
+                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-slate-700">
+                    Es depósito
+                  </span>
+                </div>
+              </label>
+              {!newNodeData.isDepot && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Cluster
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={newNodeData.cluster}
+                        onChange={(e) =>
+                          setNewNodeData((prev) => ({
+                            ...prev,
+                            cluster: parseInt(e.target.value),
+                          }))
+                        }
+                        className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Demanda
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={newNodeData.demand}
+                        onChange={(e) =>
+                          setNewNodeData((prev) => ({
+                            ...prev,
+                            demand: parseInt(e.target.value),
+                          }))
+                        }
+                        className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+              <button
+                onClick={() => setIsAddingNode(!isAddingNode)}
+                className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-300 btn-modern ${
+                  isAddingNode
+                    ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200"
+                    : "bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-200"
+                }`}
+              >
+                {isAddingNode ? "Cancelar Ubicación" : "Seleccionar en Mapa"}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-3">
             <button
-              onClick={() => setShowVisualization(!showVisualization)}
-              className={`w-full mt-2 p-2 text-white border-none rounded cursor-pointer ${
-                showVisualization ? "bg-red-500" : "bg-green-500"
+              onClick={loadExamplePenaflor}
+              className="w-full py-3 px-4 border-2 border-blue-500 rounded-lg hover:border-blue-600 transition-all duration-300 btn-modern bg-white shadow-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="flex items-center justify-center gap-2 text-blue-500">
+                <span>Cargar Ejemplo Peñaflor</span>
+              </span>
+            </button>{" "}
+            <button
+              onClick={solveProblem}
+              disabled={nodes.length < 2}
+              className={`w-full py-3 px-4 font-semibold rounded-lg shadow-lg transition-all duration-300 transform btn-modern ${
+                nodes.length >= 2
+                  ? "bg-white border-2 border-orange-500 hover:bg-orange-50 hover:border-orange-600 text-orange-500"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              {showVisualization
-                ? "🙈 Ocultar Visualización"
-                : "👁️ Mostrar Visualización"}
+              <span className="flex items-center justify-center gap-2">
+                <span>Resolver</span>
+              </span>
+            </button>{" "}
+            <button
+              onClick={clearAll}
+              className="w-full py-3 px-4 bg-red-600 rounded-lg"
+            >
+              <span className="flex items-center justify-center gap-2 text-white">
+                <span>Limpiar Todo</span>
+              </span>
             </button>
           </div>
-        )}{" "}
-        <div>
-          <h4 className="mb-2 text-sm font-medium">
-            📋 Nodos ({nodes.length})
-          </h4>
-          <div className="max-h-48 overflow-y-auto">
-            {nodes.map((node) => (
-              <div
-                key={node.id}
-                className="flex justify-between items-center p-2 my-1 text-white rounded text-xs"
-                style={{
-                  backgroundColor: node.isDepot
-                    ? "#000"
-                    : CLUSTER_COLORS[node.cluster % CLUSTER_COLORS.length],
-                }}
-              >
-                <span>
-                  {node.isDepot ? "🏢 DEPÓSITO" : `📍 ${node.id}`}
-                  {!node.isDepot && ` (C${node.cluster}, D${node.demand})`}
-                </span>
+          {solution && (
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200 animate-fade-in sidebar-section">
+              <div className="flex items-center gap-2 mb-4">
+                <h4 className="font-semibold text-gray-800">
+                  Resultados de Optimización
+                </h4>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-xl border border-gray-200 metric-card">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {solution.metrics.totalCost.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-gray-600">Costo Total</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-gray-200 metric-card">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {solution.metrics.totalDistance.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-gray-600">Distancia (km)</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-xl border border-gray-200 metric-card">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {solution.metrics.totalViolations}
+                    </div>
+                    <div className="text-xs text-gray-600">Violaciones</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-gray-200 metric-card">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {vrpParams.numVehicles}
+                    </div>
+                    <div className="text-xs text-gray-600">Vehículos</div>
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => removeNode(node.id)}
-                  className="bg-white bg-opacity-30 border-none text-white rounded px-1 cursor-pointer"
+                  onClick={() => setShowVisualization(!showVisualization)}
+                  className={`w-full py-3 px-4 font-semibold rounded-xl transition-all duration-300 ${
+                    showVisualization
+                      ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                      : "bg-gray-700 hover:bg-gray-800 text-white shadow-md"
+                  }`}
                 >
-                  ❌
+                  {showVisualization
+                    ? "Ocultar Visualización"
+                    : "Mostrar Visualización"}
                 </button>
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200 sidebar-section">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-slate-800">
+                  Puntos de Entrega
+                </h4>
+              </div>
+              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                {nodes.length}
+              </div>
+            </div>
+
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {nodes.map((node) => (
+                <div
+                  key={node.id}
+                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all node-item"
+                  style={{
+                    borderLeft: `4px solid ${
+                      node.isDepot
+                        ? MODERN_COLORS.primary
+                        : CLUSTER_COLORS[node.cluster % CLUSTER_COLORS.length]
+                    }`,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                      style={{
+                        backgroundColor: node.isDepot
+                          ? MODERN_COLORS.primary
+                          : CLUSTER_COLORS[
+                              node.cluster % CLUSTER_COLORS.length
+                            ],
+                      }}
+                    >
+                      {node.isDepot ? "D" : node.id}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-slate-800">
+                        {node.isDepot
+                          ? "Depósito Principal"
+                          : `Punto ${node.id}`}
+                      </div>
+                      {!node.isDepot && (
+                        <div className="text-sm text-slate-600">
+                          Cluster {node.cluster} • Demanda: {node.demand}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeNode(node.id)}
+                    className="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center transition-all"
+                  >
+                    ❌
+                  </button>
+                </div>
+              ))}
+
+              {nodes.length === 0 && (
+                <div className="text-center py-8 text-slate-500">
+                  <div className="text-4xl mb-2">📍</div>
+                  <div className="text-sm">No hay puntos agregados</div>
+                  <div className="text-xs">
+                    Usa el botón "Seleccionar en Mapa" para agregar puntos
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
       <div className="flex-1 relative">
-        {" "}
         <MapContainer
           center={PENAFLOR_CENTER}
           zoom={13}
           className="h-full w-full"
+          style={{ borderRadius: "0 0 0 0" }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -581,32 +764,42 @@ const Mapa = () => {
           />
           {nodes.map((node) => {
             const color = node.isDepot
-              ? "#000000"
+              ? MODERN_COLORS.primary
               : CLUSTER_COLORS[node.cluster % CLUSTER_COLORS.length];
             const icon = createCustomIcon(color, node.isDepot);
             return (
               <Marker key={node.id} position={[node.lat, node.lon]} icon={icon}>
-                <Popup>
-                  <div className="text-center">
-                    <strong>
-                      {node.isDepot ? "🏢 DEPÓSITO" : `📍 Nodo ${node.id}`}
-                    </strong>
-                    <br />
-                    {!node.isDepot && (
-                      <>
-                        🎯 Cluster: {node.cluster}
-                        <br />
-                        📦 Demanda: {node.demand}
-                        <br />
-                      </>
-                    )}
-                    🌍 Coord: {node.lat.toFixed(4)}, {node.lon.toFixed(4)}
-                    <br />
+                <Popup className="custom-popup">
+                  <div className="p-3 min-w-[200px]">
+                    <div className="text-center mb-3">
+                      <div className="text-lg font-bold text-slate-800 mb-1">
+                        {node.isDepot
+                          ? "� Depósito Principal"
+                          : `📍 Punto ${node.id}`}
+                      </div>
+                      {!node.isDepot && (
+                        <div className="text-sm text-slate-600 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span>🎯 Cluster:</span>
+                            <span className="font-semibold">
+                              {node.cluster}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>📦 Demanda:</span>
+                            <span className="font-semibold">{node.demand}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="text-xs text-slate-500 mt-2">
+                        🌍 {node.lat.toFixed(4)}, {node.lon.toFixed(4)}
+                      </div>
+                    </div>
                     <button
                       onClick={() => removeNode(node.id)}
-                      className="mt-1 bg-red-500 text-white border-none px-2 py-1 rounded cursor-pointer"
+                      className="w-full py-2 px-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-all"
                     >
-                      🗑️ Eliminar
+                      🗑️ Eliminar Punto
                     </button>
                   </div>
                 </Popup>
@@ -624,16 +817,19 @@ const Mapa = () => {
                 pathOptions={{
                   color: CLUSTER_COLORS[cluster.id % CLUSTER_COLORS.length],
                   fillColor: CLUSTER_COLORS[cluster.id % CLUSTER_COLORS.length],
-                  fillOpacity: 0.2,
-                  weight: 2,
-                  dashArray: "5, 5",
+                  fillOpacity: 0.15,
+                  weight: 3,
+                  dashArray: "10, 10",
                 }}
               >
-                <Tooltip permanent>
-                  <div className="text-center text-xs">
-                    🎯 Cluster {cluster.id}
-                    <br />
-                    📏 Radio: {(cluster.radius / 1000).toFixed(2)} km
+                <Tooltip permanent className="cluster-tooltip">
+                  <div className="bg-white p-2 rounded-lg shadow-lg border border-slate-200 text-center text-sm">
+                    <div className="font-semibold text-slate-800">
+                      🎯 Cluster {cluster.id}
+                    </div>
+                    <div className="text-slate-600">
+                      📏 {(cluster.radius / 1000).toFixed(2)} km
+                    </div>
                   </div>
                 </Tooltip>
               </Circle>
@@ -661,43 +857,88 @@ const Mapa = () => {
                   positions={routeCoords}
                   pathOptions={{
                     color: vehicleColor,
-                    weight: 4,
-                    opacity: 0.8,
+                    weight: 5,
+                    opacity: 0.9,
+                    lineCap: "round",
+                    lineJoin: "round",
                   }}
                 >
-                  <Tooltip>
-                    <div className="text-center text-xs">
-                      🚚 Vehículo {vehicleIndex + 1}
-                      <br />
-                      📍 Nodos: {route.length - 2}
-                      <br />
-                      🎯 Ruta: {route.join(" → ")}
-                      {solution.metrics.routeMetrics &&
-                        solution.metrics.routeMetrics[vehicleIndex] && (
-                          <>
-                            <br />
-                            📏 Distancia:{" "}
-                            {solution.metrics.routeMetrics[
-                              vehicleIndex
-                            ].distance.toFixed(1)}
-                            <br />
-                            📦 Carga:{" "}
-                            {
-                              solution.metrics.routeMetrics[vehicleIndex]
-                                .totalDemand
-                            }
-                          </>
-                        )}
+                  <Tooltip className="route-tooltip">
+                    <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200 text-sm">
+                      <div className="font-bold text-slate-800 mb-2">
+                        🚚 Vehículo {vehicleIndex + 1}
+                      </div>
+                      <div className="space-y-1 text-slate-600">
+                        <div>📍 Puntos: {route.length - 2}</div>
+                        <div>🎯 Ruta: {route.join(" → ")}</div>
+                        {solution.metrics.routeMetrics &&
+                          solution.metrics.routeMetrics[vehicleIndex] && (
+                            <>
+                              <div>
+                                📏 Distancia:{" "}
+                                {solution.metrics.routeMetrics[
+                                  vehicleIndex
+                                ].distance.toFixed(1)}{" "}
+                                km
+                              </div>
+                              <div>
+                                📦 Carga:{" "}
+                                {
+                                  solution.metrics.routeMetrics[vehicleIndex]
+                                    .totalDemand
+                                }
+                              </div>
+                            </>
+                          )}
+                      </div>
                     </div>
                   </Tooltip>
                 </Polyline>
               );
             })}
-        </MapContainer>{" "}
+        </MapContainer>
         {isAddingNode && (
-          <div className="absolute top-5 left-1/2 transform -translate-x-1/2 bg-blue-600 bg-opacity-90 text-white px-5 py-2 rounded-full z-50 font-bold shadow-lg">
-            📍 Haz clic en el mapa para añadir un{" "}
-            {newNodeData.isDepot ? "depósito" : "nodo"}
+          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-600 text-white px-6 py-3 rounded-2xl shadow-2xl border border-blue-400">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📍</span>
+                </div>
+                <div>
+                  <div className="font-bold text-sm">
+                    Modo de Selección Activo
+                  </div>
+                  <div className="text-xs text-blue-200">
+                    Haz clic en el mapa para añadir un{" "}
+                    {newNodeData.isDepot ? "depósito" : "punto de entrega"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {showVisualization && solution && (
+          <div className="absolute bottom-6 left-6 z-50">
+            <div className="bg-white bg-opacity-95 backdrop-blur-sm p-4 rounded-2xl shadow-2xl border border-slate-200">
+              <div className="text-sm font-semibold text-slate-800 mb-3">
+                🎨 Leyenda
+              </div>
+              <div className="space-y-2">
+                {VEHICLE_COLORS.slice(0, vrpParams.numVehicles).map(
+                  (color, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="w-4 h-1 rounded-full"
+                        style={{ backgroundColor: color }}
+                      ></div>
+                      <span className="text-xs text-slate-600">
+                        Vehículo {index + 1}
+                      </span>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
