@@ -822,7 +822,7 @@ const Mapa = () => {
                   dashArray: "10, 10",
                 }}
               >
-                <Tooltip permanent className="cluster-tooltip">
+                {/* <Tooltip permanent className="cluster-tooltip">
                   <div className="bg-white p-2 rounded-lg shadow-lg border border-slate-200 text-center text-sm">
                     <div className="font-semibold text-slate-800">
                       🎯 Cluster {cluster.id}
@@ -831,7 +831,7 @@ const Mapa = () => {
                       📏 {(cluster.radius / 1000).toFixed(2)} km
                     </div>
                   </div>
-                </Tooltip>
+                </Tooltip> */}
               </Circle>
             ))}
           {showVisualization &&
